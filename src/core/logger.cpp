@@ -13,7 +13,7 @@ extern "C"
 }
 #endif
 
-namespace pg_ai
+namespace pg_ai::logger
 {
 
     LogLevel Logger::current_level_ = LogLevel::INFO_LEVEL;

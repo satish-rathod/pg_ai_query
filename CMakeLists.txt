@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(pg_ai_query)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find PostgreSQL
@@ -32,6 +32,8 @@ set(SOURCES
     src/pg_ai_query.cpp
     src/core/query_generator.cpp
     src/core/logger.cpp
+    src/utils.cpp
+    src/prompts.cpp
 )
 
 # Create module library for PostgreSQL extension
@@ -79,6 +81,12 @@ install(FILES sql/pg_ai_query--1.0.sql
 
 install(FILES pg_ai_query.control
     DESTINATION ${PG_PKGLIB}/../extension/
+)
+
+# Install prompts directory
+install(DIRECTORY prompts/
+    DESTINATION ${PG_PKGLIB}/../extension/prompts/
+    FILES_MATCHING PATTERN "*.txt"
 )
 
 # Optional: Build logger test (not built by default)

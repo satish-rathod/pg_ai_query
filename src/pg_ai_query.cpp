@@ -24,7 +24,6 @@ extern "C"
     {
         try
         {
-            // Extract arguments
             text *nl_query_arg = PG_GETARG_TEXT_PP(0);
             text *table_name_arg = PG_ARGISNULL(1) ? nullptr : PG_GETARG_TEXT_PP(1);
             text *schema_context_arg = PG_ARGISNULL(2) ? nullptr : PG_GETARG_TEXT_PP(2);
@@ -39,8 +38,7 @@ extern "C"
                 .natural_language = nl_query,
                 .table_name = table_name,
                 .schema_context = schema_context,
-                .api_key = api_key
-            };
+                .api_key = api_key};
 
             auto result = pg_ai::QueryGenerator::generateQuery(request);
 
