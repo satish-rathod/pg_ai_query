@@ -325,4 +325,4 @@ Currently, only cloud-based OpenAI and Anthropic models are supported. Local mod
 
 ---
 
-**Don't see your question here?** Check the [Troubleshooting Guide](./troubleshooting.md) or open an issue on the project's GitHub repository.
+**Don't see your question here?** Check the [Troubleshooting Guide](./troubleshooting.md) or open an issue on the [GitHub repository](https://github.com/benodiwal/pg_ai_query/issues).

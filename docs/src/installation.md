@@ -29,7 +29,7 @@ You'll need API access to at least one of the following:
 #### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-repo/pg_ai_query.git
+git clone https://github.com/benodiwal/pg_ai_query.git
 cd pg_ai_query
 ```
 
@@ -70,7 +70,7 @@ sudo apt-get update
 sudo apt-get install postgresql-server-dev-all cmake gcc g++ libssl-dev git
 
 # Clone and build
-git clone https://github.com/your-repo/pg_ai_query.git
+git clone https://github.com/benodiwal/pg_ai_query.git
 cd pg_ai_query
 git submodule update --init --recursive
 make && sudo make install
@@ -85,7 +85,7 @@ sudo yum install postgresql-devel cmake gcc-c++ openssl-devel git
 sudo dnf install postgresql-devel cmake gcc-c++ openssl-devel git
 
 # Clone and build
-git clone https://github.com/your-repo/pg_ai_query.git
+git clone https://github.com/benodiwal/pg_ai_query.git
 cd pg_ai_query
 git submodule update --init --recursive
 make && sudo make install
@@ -98,7 +98,7 @@ make && sudo make install
 brew install postgresql cmake openssl git
 
 # Clone and build
-git clone https://github.com/your-repo/pg_ai_query.git
+git clone https://github.com/benodiwal/pg_ai_query.git
 cd pg_ai_query
 git submodule update --init --recursive
 make && sudo make install
@@ -207,7 +207,7 @@ If you encounter issues not covered here:
 
 1. Check the [Troubleshooting](./troubleshooting.md) guide
 2. Review the [FAQ](./faq.md) for common questions
-3. Open an issue on the project's GitHub repository
+3. Open an issue on the [GitHub repository](https://github.com/benodiwal/pg_ai_query/issues)
 
 ## Next Steps
 

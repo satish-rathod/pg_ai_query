@@ -137,8 +137,27 @@ jobs:
         echo "PostgreSQL pkglibdir: $PG_PKGLIB"
         echo "PostgreSQL sharedir: $PG_SHAREDIR"
 
-        echo "Checking for extension binary:"
-        ls -la "$PG_PKGLIB/pg_ai_query.so" || echo "Extension binary not found"
+        # Check both possible installation locations
+        echo "Checking for extension binary in pkglibdir:"
+        ls -la "$PG_PKGLIB/pg_ai_query.so" || echo "Extension binary not found in pkglibdir"
+
+        # For PostgreSQL 16, also check the lib directory
+        if [[ "${{ matrix.pg_version }}" == "16" ]]; then
+          PG_BASE_DIR=$(dirname "$PG_PKGLIB")
+          PG_LIB_DIR="$PG_BASE_DIR/lib"
+          echo "Checking for extension binary in lib directory: $PG_LIB_DIR"
+          ls -la "$PG_LIB_DIR/pg_ai_query.so" || echo "Extension binary not found in lib directory"
+
+          # Test if PostgreSQL can resolve $libdir correctly
+          echo "Testing \$libdir resolution for PostgreSQL 16:"
+          psql -d testdb -c "SHOW dynamic_library_path;" || echo "Could not check dynamic_library_path"
+
+          # Try loading from both locations
+          if [ -f "$PG_LIB_DIR/pg_ai_query.so" ]; then
+            echo "Testing extension loading from lib directory:"
+            psql -d testdb -c "LOAD '$PG_LIB_DIR/pg_ai_query';" || echo "Could not load from lib directory"
+          fi
+        fi
 
         echo "Checking for control file:"
         ls -la "$PG_SHAREDIR/extension/pg_ai_query.control" || echo "Control file not found"
@@ -147,29 +166,20 @@ jobs:
         ls -la "$PG_SHAREDIR/extension/pg_ai_query--1.0.sql" || echo "SQL file not found"
 
         # Check linked libraries
-        echo "Checking linked libraries:"
-        otool -L "$PG_PKGLIB/pg_ai_query.so" || echo "Could not check linked libraries"
-
-        # Debug: Check what $libdir resolves to in PostgreSQL
-        echo "Testing \$libdir resolution:"
-        psql -d testdb -c "SHOW dynamic_library_path;" || echo "Could not check dynamic_library_path"
-
-        # Test if we can load the extension with full path
-        echo "Testing extension loading with full path:"
-        psql -d testdb -c "LOAD '$PG_PKGLIB/pg_ai_query.so';" || echo "Could not load with full path"
-
-        # Try alternative installation for PostgreSQL 16
+        EXTENSION_PATH=""
         if [[ "${{ matrix.pg_version }}" == "16" ]]; then
-          echo "PostgreSQL 16 detected, trying alternative installation..."
-          # Check if there's a lib/ subdirectory expected
-          mkdir -p "$PG_PKGLIB/../lib/" 2>/dev/null || true
-          cp "$PG_PKGLIB/pg_ai_query.so" "$PG_PKGLIB/../lib/" 2>/dev/null || true
+          PG_BASE_DIR=$(dirname "$PG_PKGLIB")
+          EXTENSION_PATH="$PG_BASE_DIR/lib/pg_ai_query.so"
+        else
+          EXTENSION_PATH="$PG_PKGLIB/pg_ai_query.so"
+        fi
 
-          # Also try the standard PostgreSQL lib directory
-          PG_LIB_ALT="$(brew --prefix postgresql@${{ matrix.pg_version }})/lib"
-          echo "Trying alternative lib directory: $PG_LIB_ALT"
-          mkdir -p "$PG_LIB_ALT" 2>/dev/null || true
-          cp "$PG_PKGLIB/pg_ai_query.so" "$PG_LIB_ALT/" 2>/dev/null || true
+        if [ -f "$EXTENSION_PATH" ]; then
+          echo "Checking linked libraries for: $EXTENSION_PATH"
+          otool -L "$EXTENSION_PATH" || echo "Could not check linked libraries"
+
+          echo "Testing extension loading with full path:"
+          psql -d testdb -c "LOAD '$EXTENSION_PATH';" || echo "Could not load with full path"
         fi
 
         # Basic functionality test

@@ -392,7 +392,7 @@ To isolate problems:
 
 ### Community Resources
 
-- GitHub Issues: Report bugs and feature requests
+- [GitHub Issues](https://github.com/benodiwal/pg_ai_query/issues): Report bugs and feature requests
 - Documentation: Check for updated troubleshooting info
 - PostgreSQL Community: For database-specific issues
 

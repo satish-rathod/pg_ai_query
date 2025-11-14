@@ -78,3 +78,7 @@ The extension consists of several key components:
 ## Getting Started
 
 Ready to start generating SQL queries from natural language? Head over to the [Installation](./installation.md) guide to get started, or check out our [Quick Start](./quick-start.md) tutorial for a hands-on introduction.
+
+## Repository
+
+The source code is available on [GitHub](https://github.com/benodiwal/pg_ai_query). Feel free to contribute, report issues, or explore the implementation.

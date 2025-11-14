@@ -57,8 +57,7 @@ else()
     )
 endif()
 
-# Find and link required system libraries
-find_package(ZLIB REQUIRED)
+# Find required system libraries
 find_package(OpenSSL REQUIRED)
 
 # Find gettext for NLS support (required by PostgreSQL)
@@ -112,18 +111,10 @@ if(APPLE)
         LINK_SEARCH_END_STATIC ON
     )
 
-    # Also try to link against system zlib instead of bundled one
-    find_library(SYSTEM_Z z PATHS /usr/lib /System/Library/Frameworks REQUIRED)
-    target_link_libraries(pg_ai_query PRIVATE ${SYSTEM_Z})
+    # Force linking to specific system zlib to avoid duplicates
+    target_link_libraries(pg_ai_query PRIVATE "/usr/lib/libz.1.dylib")
 
-    # Remove any references to ZLIB::ZLIB to avoid conflicts
-    get_target_property(CURRENT_LINK_LIBS pg_ai_query LINK_LIBRARIES)
-    if(CURRENT_LINK_LIBS)
-        list(REMOVE_ITEM CURRENT_LINK_LIBS "ZLIB::ZLIB")
-        set_target_properties(pg_ai_query PROPERTIES LINK_LIBRARIES "${CURRENT_LINK_LIBS}")
-    endif()
-
-    message(STATUS "Found system zlib at: ${SYSTEM_Z}")
+    message(STATUS "Using system zlib at: /usr/lib/libz.1.dylib")
     message(STATUS "Found libz.1.dylib at: ${LIBZ_PATH}")
 endif()
 
@@ -138,15 +129,27 @@ target_compile_definitions(pg_ai_query PRIVATE
     USE_POSTGRESQL_ELOG
 )
 
-# Install target to correct PostgreSQL lib directory
-install(TARGETS pg_ai_query
-    LIBRARY DESTINATION ${PG_PKGLIB}
-)
-
 # Get PostgreSQL version to handle path differences
 execute_process(COMMAND ${PG_CONFIG} --version OUTPUT_VARIABLE PG_VERSION_STRING OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(REGEX MATCH "PostgreSQL ([0-9]+)" PG_MAJOR_VERSION_MATCH ${PG_VERSION_STRING})
 set(PG_MAJOR_VERSION ${CMAKE_MATCH_1})
+
+# Install target to correct PostgreSQL lib directory
+# Handle PostgreSQL 16+ path differences
+if(PG_MAJOR_VERSION GREATER_EQUAL 16)
+    # PostgreSQL 16+ expects extensions in the standard lib directory
+    get_filename_component(PG_BASE_DIR "${PG_PKGLIB}" DIRECTORY)
+    set(PG_LIB_DIR "${PG_BASE_DIR}/lib")
+    install(TARGETS pg_ai_query
+        LIBRARY DESTINATION ${PG_LIB_DIR}
+    )
+    message(STATUS "PostgreSQL 16+ detected, installing to: ${PG_LIB_DIR}")
+else()
+    install(TARGETS pg_ai_query
+        LIBRARY DESTINATION ${PG_PKGLIB}
+    )
+    message(STATUS "PostgreSQL <16 detected, installing to: ${PG_PKGLIB}")
+endif()
 
 # Debug: Print installation paths
 message(STATUS "PostgreSQL version: ${PG_VERSION_STRING}")
