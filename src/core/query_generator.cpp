@@ -193,7 +193,8 @@ QueryResult QueryGenerator::generateQuery(const QueryRequest& request) {
     std::string explanation = j.value("explanation", "");
 
     if (sql.empty()) {
-      return {.success = true, .explanation = explanation};
+      return {
+          .success = true, .explanation = explanation, .generated_query = ""};
     }
 
     std::string upper_sql = sql;

@@ -59,10 +59,9 @@ Datum generate_query(PG_FUNCTION_ARGS) {
     std::string formatted_response =
         pg_ai::ResponseFormatter::formatResponse(result, config);
 
-    if (config.enable_logging && !config.use_formatted_response &&
-        !result.explanation.empty()) {
-      ereport(INFO,
-              (errmsg("Query explanation: %s", result.explanation.c_str())));
+    if (result.generated_query.empty()) {
+      ereport(INFO, (errmsg("%s", result.explanation.c_str())));
+      PG_RETURN_TEXT_P(cstring_to_text(""));
     }
 
     PG_RETURN_TEXT_P(cstring_to_text(formatted_response.c_str()));
