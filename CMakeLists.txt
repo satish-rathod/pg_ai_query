@@ -142,7 +142,7 @@ target_compile_definitions(pg_ai_query PRIVATE
 execute_process(COMMAND ${PG_CONFIG} --version OUTPUT_VARIABLE PG_VERSION_STRING OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(PG_MAJOR_VERSION ${CMAKE_MATCH_1})
 
-install(TARGETS pg_ai_query LIBRARY DESTINATION ${PG_PKGLIB})
+install(TARGETS pg_ai_query LIBRARY DESTINATION ${PG_LIBDIR})
 
 # Debug: Print installation paths
 message(STATUS "PostgreSQL version: ${PG_VERSION_STRING}")
