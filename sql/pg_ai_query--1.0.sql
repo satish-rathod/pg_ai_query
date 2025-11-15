@@ -49,3 +49,23 @@ COMMENT ON FUNCTION get_database_tables() IS
 COMMENT ON FUNCTION get_table_details(text, text) IS
 'Returns detailed JSON information about a specific table including columns with their data types, constraints, foreign keys, and indexes.';
 
+-- Explain query function: Runs EXPLAIN ANALYZE and provides AI-generated explanation
+CREATE OR REPLACE FUNCTION explain_query(
+    query_text text,
+    api_key text DEFAULT NULL,
+    provider text DEFAULT 'auto'
+)
+RETURNS text
+AS 'MODULE_PATHNAME', 'explain_query'
+LANGUAGE C
+VOLATILE
+SECURITY DEFINER;
+
+-- Example usage:
+-- SELECT explain_query('SELECT * FROM users WHERE created_at > NOW() - INTERVAL ''7 days''');
+-- SELECT explain_query('SELECT u.name, COUNT(o.id) FROM users u LEFT JOIN orders o ON u.id = o.user_id GROUP BY u.id', 'your-api-key-here');
+-- SELECT explain_query('SELECT * FROM products ORDER BY price DESC LIMIT 10', 'your-api-key-here', 'openai');
+
+COMMENT ON FUNCTION explain_query(text, text, text) IS
+'Runs EXPLAIN ANALYZE on a query and returns an AI-generated explanation of the execution plan, performance insights, and optimization suggestions. Provider options: openai, anthropic, auto (default). Pass API key as parameter or configure ~/.pg_ai.config.';
+

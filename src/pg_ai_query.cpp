@@ -23,6 +23,7 @@ PG_MODULE_MAGIC;
 PG_FUNCTION_INFO_V1(generate_query);
 PG_FUNCTION_INFO_V1(get_database_tables);
 PG_FUNCTION_INFO_V1(get_table_details);
+PG_FUNCTION_INFO_V1(explain_query);
 
 /**
  * generate_query(natural_language_query text, api_key text DEFAULT NULL,
@@ -158,6 +159,42 @@ Datum get_table_details(PG_FUNCTION_ARGS) {
     std::string json_string = json_result.dump(2);
     PG_RETURN_TEXT_P(cstring_to_text(json_string.c_str()));
 
+  } catch (const std::exception& e) {
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+                    errmsg("Internal error: %s", e.what())));
+    PG_RETURN_NULL();
+  }
+}
+
+/**
+ * explain_query(query_text text, api_key text DEFAULT NULL,
+ * provider text DEFAULT 'auto')
+ *
+ * Runs EXPLAIN ANALYZE on a query and returns an AI-generated explanation
+ * of the execution plan, performance insights, and optimization suggestions.
+ */
+Datum explain_query(PG_FUNCTION_ARGS) {
+  try {
+    text* query_text_arg = PG_GETARG_TEXT_PP(0);
+    text* api_key_arg = PG_ARGISNULL(1) ? nullptr : PG_GETARG_TEXT_PP(1);
+    text* provider_arg = PG_ARGISNULL(2) ? nullptr : PG_GETARG_TEXT_PP(2);
+
+    std::string query_text = text_to_cstring(query_text_arg);
+    std::string api_key = api_key_arg ? text_to_cstring(api_key_arg) : "";
+    std::string provider = provider_arg ? text_to_cstring(provider_arg) : "auto";
+
+    pg_ai::ExplainRequest request{
+        .query_text = query_text, .api_key = api_key, .provider = provider};
+
+    auto result = pg_ai::QueryGenerator::explainQuery(request);
+
+    if (!result.success) {
+      ereport(ERROR, (errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION),
+                      errmsg("Query explanation failed: %s",
+                             result.error_message.c_str())));
+    }
+
+    PG_RETURN_TEXT_P(cstring_to_text(result.ai_explanation.c_str()));
   } catch (const std::exception& e) {
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
                     errmsg("Internal error: %s", e.what())));

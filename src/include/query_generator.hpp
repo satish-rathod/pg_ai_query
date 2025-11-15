@@ -55,6 +55,20 @@ struct DatabaseSchema {
   std::string error_message;
 };
 
+struct ExplainRequest {
+  std::string query_text;
+  std::string api_key;
+  std::string provider;
+};
+
+struct ExplainResult {
+  std::string query;
+  std::string explain_output;
+  std::string ai_explanation;
+  bool success;
+  std::string error_message;
+};
+
 class QueryGenerator {
  public:
   static QueryResult generateQuery(const QueryRequest& request);
@@ -62,6 +76,7 @@ class QueryGenerator {
   static TableDetails getTableDetails(
       const std::string& table_name,
       const std::string& schema_name = "public");
+  static ExplainResult explainQuery(const ExplainRequest& request);
 
   static std::string formatSchemaForAI(const DatabaseSchema& schema);
   static std::string formatTableDetailsForAI(const TableDetails& details);

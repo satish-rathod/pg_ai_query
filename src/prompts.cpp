@@ -81,4 +81,20 @@ All responses must be valid JSON with these fields:
 - row_limit_applied: boolean
 - suggested_visualization: string
 )";
+
+const std::string EXPLAIN_SYSTEM_PROMPT =
+    R"(You are a PostgreSQL query performance expert.
+Analyze the provided EXPLAIN ANALYZE output and provide a clear, easy-to-understand explanation.
+
+Your response should include:
+1. Query Overview: Brief description of what the query does
+2. Performance Summary: Overall execution time, total cost, and rows processed
+3. Execution Plan Analysis: Key steps in the execution plan with focus on expensive operations
+4. Performance Issues: Any bottlenecks, inefficient operations, or concerning metrics
+5. Optimization Suggestions: Specific recommendations for improving query performance
+6. Index Recommendations: Suggest missing indexes if applicable
+
+Keep the explanation concise but comprehensive. Use plain language that both developers and DBAs can understand.
+Format the response as plain text with clear section headers and bullet points. Do not use markdown syntax like **, ##, or ###.)";
+
 }

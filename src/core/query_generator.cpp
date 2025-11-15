@@ -590,4 +590,163 @@ std::string QueryGenerator::formatTableDetailsForAI(
   return result.str();
 }
 
+ExplainResult QueryGenerator::explainQuery(const ExplainRequest& request) {
+  ExplainResult result{.success = false};
+
+  try {
+    if (request.query_text.empty()) {
+      result.error_message = "Query text cannot be empty";
+      return result;
+    }
+
+    result.query = request.query_text;
+
+    if (SPI_connect() != SPI_OK_CONNECT) {
+      result.error_message = "Failed to connect to SPI";
+      return result;
+    }
+
+    std::string explain_query = "EXPLAIN (ANALYZE, VERBOSE, COSTS, SETTINGS, BUFFERS, FORMAT JSON) " + request.query_text;
+
+    int ret = SPI_execute(explain_query.c_str(), false, 0);
+
+    if (ret < 0) {
+      result.error_message = "Failed to execute EXPLAIN query: " + std::string(SPI_result_code_string(ret));
+      SPI_finish();
+      return result;
+    }
+
+    if (ret != SPI_OK_SELECT && ret != SPI_OK_UTILITY) {
+      result.error_message = "Failed to execute EXPLAIN query. SPI result code: " + std::to_string(ret) +
+                           " (" + std::string(SPI_result_code_string(ret)) + "). " +
+                           "This may indicate the query failed or EXPLAIN ANALYZE is not supported in this context.";
+      SPI_finish();
+      return result;
+    }
+
+    if (SPI_processed == 0) {
+      result.error_message = "No output from EXPLAIN query";
+      SPI_finish();
+      return result;
+    }
+
+    SPITupleTable* tuptable = SPI_tuptable;
+    TupleDesc tupdesc = tuptable->tupdesc;
+    HeapTuple tuple = tuptable->vals[0];
+
+    char* explain_output = SPI_getvalue(tuple, tupdesc, 1);
+    if (!explain_output) {
+      result.error_message = "Failed to get EXPLAIN output";
+      SPI_finish();
+      return result;
+    }
+
+    result.explain_output = std::string(explain_output);
+    SPI_finish();
+
+    const auto& cfg = config::ConfigManager::getConfig();
+    std::string api_key = request.api_key;
+    std::string provider_preference = request.provider;
+
+    config::Provider selected_provider;
+    const config::ProviderConfig* provider_config = nullptr;
+
+    if (provider_preference == "openai") {
+      selected_provider = config::Provider::OPENAI;
+      provider_config = config::ConfigManager::getProviderConfig(config::Provider::OPENAI);
+      if (api_key.empty() && provider_config && !provider_config->api_key.empty()) {
+        api_key = provider_config->api_key;
+      }
+    } else if (provider_preference == "anthropic") {
+      selected_provider = config::Provider::ANTHROPIC;
+      provider_config = config::ConfigManager::getProviderConfig(config::Provider::ANTHROPIC);
+      if (api_key.empty() && provider_config && !provider_config->api_key.empty()) {
+        api_key = provider_config->api_key;
+      }
+    } else {
+      if (api_key.empty()) {
+        const auto* openai_config = config::ConfigManager::getProviderConfig(config::Provider::OPENAI);
+        if (openai_config && !openai_config->api_key.empty()) {
+          selected_provider = config::Provider::OPENAI;
+          provider_config = openai_config;
+          api_key = openai_config->api_key;
+        } else {
+          const auto* anthropic_config = config::ConfigManager::getProviderConfig(config::Provider::ANTHROPIC);
+          if (anthropic_config && !anthropic_config->api_key.empty()) {
+            selected_provider = config::Provider::ANTHROPIC;
+            provider_config = anthropic_config;
+            api_key = anthropic_config->api_key;
+          } else {
+            result.error_message = "API key required. Pass as parameter or configure ~/.pg_ai.config";
+            return result;
+          }
+        }
+      } else {
+        selected_provider = config::Provider::OPENAI;
+        provider_config = config::ConfigManager::getProviderConfig(config::Provider::OPENAI);
+      }
+    }
+
+    if (api_key.empty()) {
+      result.error_message = "No API key available for provider";
+      return result;
+    }
+
+    std::string system_prompt = prompts::EXPLAIN_SYSTEM_PROMPT;
+
+    std::string prompt = "Please analyze this PostgreSQL EXPLAIN ANALYZE output:\n\nQuery:\n" +
+                        request.query_text + "\n\nEXPLAIN Output:\n" +
+                        result.explain_output;
+
+    ai::Client client;
+    std::string model_name;
+
+    try {
+      if (selected_provider == config::Provider::OPENAI) {
+        client = ai::openai::create_client(api_key);
+        model_name = (provider_config && !provider_config->default_model.name.empty())
+                       ? provider_config->default_model.name : "gpt-4o";
+      } else if (selected_provider == config::Provider::ANTHROPIC) {
+        client = ai::anthropic::create_client(api_key);
+        model_name = (provider_config && !provider_config->default_model.name.empty())
+                       ? provider_config->default_model.name : "claude-3-5-sonnet-20241022";
+      } else {
+        client = ai::openai::create_client(api_key);
+        model_name = "gpt-4o";
+      }
+    } catch (const std::exception& e) {
+      result.error_message = "Failed to create AI client: " + std::string(e.what());
+      return result;
+    }
+
+    ai::GenerateOptions options(model_name, system_prompt, prompt);
+
+    const config::ModelConfig* model_config = config::ConfigManager::getModelConfig(model_name);
+    if (model_config) {
+      options.max_tokens = model_config->max_tokens;
+      options.temperature = model_config->temperature;
+    }
+
+    auto ai_result = client.generate_text(options);
+
+    if (!ai_result) {
+      result.error_message = "AI API error: " + ai_result.error_message();
+      return result;
+    }
+
+    if (ai_result.text.empty()) {
+      result.error_message = "Empty response from AI service";
+      return result;
+    }
+
+    result.ai_explanation = ai_result.text;
+    result.success = true;
+    return result;
+
+  } catch (const std::exception& e) {
+    result.error_message = "Internal error: " + std::string(e.what());
+    return result;
+  }
+}
+
 }  // namespace pg_ai
