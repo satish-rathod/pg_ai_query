@@ -6,6 +6,7 @@ on:
       - '**.md'
       - 'docs/**'
       - 'LICENSE'
+      - '.agents/commands'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/PULL_REQUEST_TEMPLATE.md'
       - '.gitignore'
@@ -16,6 +17,7 @@ on:
       - '**.md'
       - 'docs/**'
       - 'LICENSE'
+      - '.agents/commands'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/PULL_REQUEST_TEMPLATE.md'
       - '.gitignore'
@@ -54,7 +56,7 @@ jobs:
           path: |
             ~/.cache/vcpkg
             build/_deps
-          key: ${{ runner.os }}-pg${{ matrix.pg_version }}-${{ hashFiles('**/CMakeLists.txt') }}
+          key: ${{ runner.os }}-pg${{ matrix.pg_version }}-${{ hashFiles('CMakeLists.txt', 'third_party/ai-sdk-cpp/CMakeLists.txt') }}
           restore-keys: |
             ${{ runner.os }}-pg${{ matrix.pg_version }}-
       - name: Install dependencies (Ubuntu)
