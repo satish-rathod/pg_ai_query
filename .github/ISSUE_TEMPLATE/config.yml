@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://benodiwal.github.io/pg_ai_query/
+    about: Check the official documentation for guides and API reference
+  - name: GitHub Discussions
+    url: https://github.com/benodiwal/pg_ai_query/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: Troubleshooting Guide
+    url: https://benodiwal.github.io/pg_ai_query/troubleshooting.html
+    about: Common issues and their solutions

@@ -1,0 +1,146 @@
+name: Installation/Setup Issue
+description: Report problems with building, installing, or configuring pg_ai_query
+title: "[Installation]: "
+labels: ["installation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an installation issue! Please provide as much detail as possible to help us assist you.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Describe the installation or setup problem you're encountering
+      placeholder: Describe the issue...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install-step
+    attributes:
+      label: Installation Step
+      description: At which step are you encountering the issue?
+      options:
+        - Prerequisites/Dependencies
+        - Git clone/submodules
+        - CMake configuration
+        - Build (make)
+        - Installation (make install)
+        - CREATE EXTENSION
+        - Configuration file setup
+        - API key configuration
+        - Testing the extension
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands Executed
+      description: What commands did you run?
+      placeholder: |
+        git clone --recurse-submodules https://github.com/benodiwal/pg_ai_query.git
+        cd pg_ai_query
+        mkdir build && cd build
+        cmake ..
+        make
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-output
+    attributes:
+      label: Error Output
+      description: Full error message or output
+      placeholder: Paste the complete error output here...
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: pg-version
+    attributes:
+      label: PostgreSQL Version
+      description: Output of `pg_config --version`
+      placeholder: PostgreSQL 16.0
+    validations:
+      required: true
+
+  - type: input
+    id: cmake-version
+    attributes:
+      label: CMake Version
+      description: Output of `cmake --version`
+      placeholder: cmake version 3.27.0
+
+  - type: input
+    id: compiler
+    attributes:
+      label: Compiler
+      description: Which C++ compiler are you using?
+      placeholder: g++ 11.4.0 / clang++ 15.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - WSL (Windows Subsystem for Linux)
+        - Docker
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version/Distribution
+      description: e.g., Ubuntu 22.04, macOS 14.0, Windows 11
+      placeholder: Ubuntu 22.04
+    validations:
+      required: true
+
+  - type: textarea
+    id: pg-config
+    attributes:
+      label: PostgreSQL Configuration
+      description: Output of `pg_config` (if relevant)
+      placeholder: Paste pg_config output here...
+      render: shell
+
+  - type: textarea
+    id: cmake-output
+    attributes:
+      label: CMake Configuration Output
+      description: Full output from cmake command
+      placeholder: Paste cmake output here...
+      render: shell
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-installation Checklist
+      description: Have you verified these prerequisites?
+      options:
+        - label: PostgreSQL 12+ is installed with development headers (postgresql-server-dev)
+        - label: CMake 3.16+ is installed
+        - label: C++20 compatible compiler is installed
+        - label: Git submodules were properly initialized (--recurse-submodules)
+        - label: pg_config is in PATH
+        - label: I have API key(s) from OpenAI or Anthropic
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other relevant information
+      placeholder: Add any other context about the installation problem here...

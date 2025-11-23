@@ -1,0 +1,112 @@
+name: Bug Report
+description: Report a bug or unexpected behavior in pg_ai_query
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the following information to help us investigate and fix the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the bug you encountered...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Create extension with '...'
+        2. Run query '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what you expected to happen...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: query
+    attributes:
+      label: SQL Query/Function Call
+      description: The exact SQL query or function call that triggered the issue
+      placeholder: |
+        SELECT generate_query('your prompt here');
+      render: sql
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Messages/Logs
+      description: Any error messages or relevant log output
+      placeholder: Paste error messages or logs here...
+      render: shell
+
+  - type: input
+    id: pg-version
+    attributes:
+      label: PostgreSQL Version
+      description: Output of `SELECT version();`
+      placeholder: PostgreSQL 16.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version
+      description: e.g., Ubuntu 22.04, macOS 14.0, Windows 11
+      placeholder: Ubuntu 22.04
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Your pg_ai.config file (remove sensitive API keys!)
+      placeholder: |
+        [general]
+        log_level = "INFO"
+        enable_logging = false
+        ...
+      render: ini
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem
+      placeholder: Add any other context, screenshots, or information about the problem here...
