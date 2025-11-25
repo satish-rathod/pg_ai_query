@@ -87,10 +87,58 @@ bool ConfigManager::loadConfig(const std::string& config_path) {
     // Enable/disable logging based on config
     logger::Logger::setLoggingEnabled(config_.enable_logging);
     logger::Logger::info("Configuration loaded successfully");
+    // Override with environment variables
+    loadEnvConfig();
     return true;
   } else {
     logger::Logger::error("Failed to parse configuration file");
     return false;
+  }
+}
+
+void ConfigManager::loadEnvConfig() {
+  const char* openai_key = std::getenv("OPENAI_API_KEY");
+  if (openai_key) {
+    auto provider_config = getProviderConfigMutable(Provider::OPENAI);
+    if (!provider_config) {
+      ProviderConfig new_config;
+      new_config.provider = Provider::OPENAI;
+      // Set default model for OpenAI if creating new config
+      ModelConfig gpt4o;
+      gpt4o.name = "gpt-4o";
+      gpt4o.description = "GPT-4 Omni - Latest model";
+      gpt4o.max_tokens = 16384;
+      gpt4o.temperature = 0.7;
+      new_config.available_models.push_back(gpt4o);
+      new_config.default_model = gpt4o;
+
+      config_.providers.push_back(new_config);
+      provider_config = &config_.providers.back();
+    }
+    provider_config->api_key = openai_key;
+    logger::Logger::info("Loaded OpenAI API key from environment variable");
+  }
+
+  const char* anthropic_key = std::getenv("ANTHROPIC_API_KEY");
+  if (anthropic_key) {
+    auto provider_config = getProviderConfigMutable(Provider::ANTHROPIC);
+    if (!provider_config) {
+      ProviderConfig new_config;
+      new_config.provider = Provider::ANTHROPIC;
+      // Set default model for Anthropic if creating new config
+      ModelConfig claude3_5;
+      claude3_5.name = "claude-3-5-sonnet-20241022";
+      claude3_5.description = "Claude 3.5 Sonnet - Latest model";
+      claude3_5.max_tokens = 8192;
+      claude3_5.temperature = 0.7;
+      new_config.available_models.push_back(claude3_5);
+      new_config.default_model = claude3_5;
+
+      config_.providers.push_back(new_config);
+      provider_config = &config_.providers.back();
+    }
+    provider_config->api_key = anthropic_key;
+    logger::Logger::info("Loaded Anthropic API key from environment variable");
   }
 }
 

@@ -114,6 +114,11 @@ class ConfigManager {
    * @brief Get mutable provider config (for internal use)
    */
   static ProviderConfig* getProviderConfigMutable(Provider provider);
+
+  /**
+   * @brief Load configuration from environment variables
+   */
+  static void loadEnvConfig();
 };
 
 // Convenience macros for accessing config

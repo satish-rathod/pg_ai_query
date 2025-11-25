@@ -63,6 +63,20 @@ default_model = "gpt-4o"
 [anthropic]
 api_key = "your-anthropic-api-key-here"
 default_model = "claude-3-5-sonnet-20241022"
+default_model = "claude-3-5-sonnet-20241022"
+```
+
+### Environment Variables
+
+You can also configure API keys using environment variables. These will override values in the configuration file:
+
+- `OPENAI_API_KEY`: API key for OpenAI
+- `ANTHROPIC_API_KEY`: API key for Anthropic
+
+Example:
+```bash
+export OPENAI_API_KEY="sk-..."
+export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
 ### Basic Usage
