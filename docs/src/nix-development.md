@@ -98,7 +98,10 @@ cargo clippy
 
 ```bash
 # Format C++ code
-clang-format -i src/**/*.cpp src/**/*.h
+make format
+
+# Check formatting without modifying
+make format-check
 
 # Lint YAML files
 yamllint .github/workflows/

@@ -106,14 +106,77 @@ The script generates a plan that includes:
 
 ## Development Environment
 
-### Required Tools
+### Option 1: Nix Development Environment (Recommended)
+
+We provide a comprehensive Nix flake that includes all required tools and dependencies. This ensures a consistent, reproducible development environment across all platforms.
+
+**Why use Nix?**
+- Same environment as CI/CD
+- All tools pre-installed (CMake, PostgreSQL, Rust, mdbook, etc.)
+- Reproducible builds
+- No manual dependency installation
+- Works on macOS and Linux
+
+**Quick Start with Nix:**
+
+See [NIX.md](NIX.md) for complete installation and setup guide.
+
+```bash
+# Install Nix (if not already installed)
+curl -L https://nixos.org/nix/install | sh
+
+# Enable flakes
+mkdir -p ~/.config/nix
+echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+
+# Enter development environment
+nix develop
+
+# Or use direnv for automatic loading (recommended)
+# See DIRENV_SETUP.md for details
+```
+
+**What's included in the Nix environment:**
+- CMake, Make, Clang/LLVM (C++20)
+- PostgreSQL 16 with development headers
+- Rust toolchain (cargo, rustc, rust-analyzer)
+- Documentation tools (mdbook + plugins)
+- Code quality tools (clang-format, markdownlint, yamllint)
+- Utilities (ripgrep, fd, jq)
+
+**Build with Nix:**
+```bash
+# Enter Nix environment
+nix develop
+
+# Build extension
+mkdir -p build && cd build
+cmake ..
+make
+
+# Build documentation
+cd docs && mdbook serve
+
+# Run formatting
+make format
+```
+
+For more details:
+- **[NIX.md](NIX.md)** - Complete Nix setup and usage guide
+- **[DIRENV_SETUP.md](DIRENV_SETUP.md)** - Automatic environment loading with direnv
+
+### Option 2: Manual Setup
+
+If you prefer not to use Nix, you can install dependencies manually:
+
+#### Required Tools
 
 - **C++ Compiler**: GCC 8+, Clang 10+, or MSVC 2019+
 - **CMake**: Version 3.16 or later
 - **PostgreSQL**: Development headers and libraries
 - **Git**: For version control
 
-### Development Dependencies
+#### Development Dependencies
 
 The project uses these key dependencies:
 
@@ -122,7 +185,7 @@ The project uses these key dependencies:
 - **OpenSSL**: For secure HTTP communications
 - **PostgreSQL**: Extension development headers
 
-### Build Configuration
+#### Build Configuration
 
 For development, use Debug build:
 
@@ -152,14 +215,33 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 
 The project uses clang-format with Chromium style:
 
+**With Nix (recommended):**
 ```bash
+# Nix environment includes all tools
+nix develop
+
+# Format all C++ source files
+make format
+
+# Check formatting (without modifying)
+make format-check
+
+# Lint other files
+markdownlint docs/src/*.md
+yamllint .github/workflows/*.yml
+```
+
+**Without Nix:**
+```bash
+# Install clang-format (version may vary)
+# macOS: brew install clang-format
+# Ubuntu: apt install clang-format
+
 # Format all source files
-make format 
-# OR
-find src -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
+make format
 
 # Check formatting
-find src -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run -Werror
+make format-check
 ```
 
 ### PostgreSQL Integration
@@ -315,9 +397,27 @@ When requesting features, please use the feature request template in `.github/IS
 
 ### Building Documentation
 
+**With Nix (recommended):**
+```bash
+# Nix environment includes mdbook and all plugins
+nix develop
+
+# Build and serve
+cd docs
+mdbook serve  # Visit http://localhost:3000
+
+# Build static files
+mdbook build
+```
+
+**Without Nix:**
 ```bash
 # Install mdBook
 cargo install mdbook
+
+# Optional plugins
+cargo install mdbook-mermaid
+cargo install mdbook-linkcheck
 
 # Build documentation
 cd docs && mdbook build
